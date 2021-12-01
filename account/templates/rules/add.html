@@ -1,0 +1,207 @@
+{% extends 'master.html' %}
+
+{% block content %}
+{% load account_extras %}
+ <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Rules</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-brand"><a href="#">Home</a></li>
+              <li class="breadcrumb-brand active">&nbsp; Rules</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+         {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+              <form action="/profile/rule/save/" method="post">
+ <div class="card">
+              <div class="card-header">
+                    {% csrf_token %}
+                  <input type="hidden" name="brand_id" value="{{brand.id}}">
+                  <input type="hidden" name="loader_id" value="{{loader.id}}">
+                  <input type="hidden" name="type" value="{{type}}">
+                  <input type="hidden" name="sheet_id">
+
+                   <div class="from-group">
+                      <label for="">Line in Price with Titles</label>
+                       <br>
+                      <input type="number" class="form-group" value="{{ rule.start_from|default:'1' }}" name="start_from" min="1">
+                  </div>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+
+
+
+                <table id="exampl" class="table table-bordered table-hover">
+                  <thead>
+                  <tr>
+                    <th>Database Fields</th>
+                    <th>Excell field</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td>SKU</td>
+                    <td>
+                         <select name="sku" id="" >
+                            <option value="9999">None</option>
+                            {% for t in price_titles %}
+                                {% if t is not None %}
+                                    <option {% if rule.sku|myInt is forloop.counter0 %} selected {% endif %} value="{{ forloop.counter0 }}">{{t}}</option>
+                                {%endif%}
+                            {% endfor %}
+                         </select>
+                    </td>
+                  </tr>
+                   <tr>
+                    <td>MSRP</td>
+                    <td>
+                         <select name="msrp">
+                            <option value="9999">None</option>
+                            {% for t in price_titles %}
+                                {% if t is not None %}
+                                    <option {% if rule.msrp|myInt is forloop.counter0 %} selected {% endif %}  value="{{ forloop.counter0 }}">{{t}}</option>
+                                {%endif%}
+                            {% endfor %}
+                         </select>
+                    </td>
+                  </tr>
+                   <tr>
+                    <td>MAP</td>
+                    <td>
+                         <select  name="map">
+                             <option value="9999">None</option>
+                            {% for t in price_titles %}
+                                {% if t is not None %}
+                                    <option {% if rule.map|myInt is forloop.counter0 %} selected {% endif %}  value="{{ forloop.counter0 }}">{{t}}</option>
+                                {%endif%}
+                            {% endfor %}
+                         </select>
+                    </td>
+                  </tr>
+                   <tr>
+                    <td>Our Price</td>
+                    <td>
+                        <select name="our_price" >
+                            <option value="9999">None</option>
+                            {% for t in price_titles %}
+                                {% if t is not None %}
+                                    <option {% if rule.our_price|myInt is forloop.counter0 %} selected {% endif %}  value="{{ forloop.counter0 }}">{{t}}</option>
+                                {%endif%}
+                            {% endfor %}
+                         </select>
+                    </td>
+                  </tr>
+
+                  </tbody>
+                  <tfoot>
+                  <tr>
+                    <th>Database Fields</th>
+                    <th>Excell field</th>
+                  </tr>
+                  </tfoot>
+                </table>
+                  <br><br>
+
+                  <p style="font-weight: bold">Select Stylesheet, that will be load by this rule (Ctrl+Click)</p>
+
+                  <select name="sheets" multiple id="tabs">
+                      
+                      {% for tab in tabs %}
+                          <option {% if forloop.counter0|myRange:rule.sheets  %} selected {% endif %}
+                                  value="{{forloop.counter0}}">{{tab}}</option>
+                      {% endfor %}
+                  </select>
+
+
+                  <hr>
+
+                     <p style="font-weight: bold">Required field. If this field is empty, in Price File, product will not create</p>
+
+
+              <select name="field_not_empty" >
+                                {% for t in db_titles %}
+                                    <option {% if rule.field_not_empty == t %} selected {% endif %}  value="{{t}}"  >{{t}} </option>
+                                {% endfor %}
+              </select>
+
+
+
+              <br><br>
+              <p ><span style="font-weight:bold">Ignore words</span> ( separated by comma )</p>
+              <textarea name="rules" cols="40" rows="2">{{rule.rules}}</textarea>
+
+                   <hr>
+              <p><span style="font-weight:bold">Remove charter from all SKUs</p>
+                <input type="text" name="remove_charter_from_all_sku" value="{{rule.remove_charter_all|default:''}}">
+    <hr>
+                <p>
+                    <span style="font-weight:bold">Remove charter
+                    <input type="text" name="remove_charter_from_sku" value="{{rule.remove_charter|default:''}}">
+                    from SKU
+                    <input type="text" name="sku_to_remove_charter" value="{{rule.remove_charter_sku|default:''}}">
+                </p>
+
+
+       <hr>
+                <p><span style="font-weight:bold">Ignore SKUs</p>
+                <textarea name="ignore_sku" cols="40" rows="2">{{rule.ignore_skus}}</textarea>
+     <hr>
+                <p><span style="font-weight:bold">Replace SKU <input type="text" name="what" value="{{rule.r_what|default:''}}"> by
+                    <input type="text" name="forwhat" value="{{rule.r_forwhat|default:''}}">  </p>
+
+                  <hr>
+                  <button class="btn btn-success">Save</button>
+              </div>
+
+
+
+              <!-- /.card-body -->
+            </div>
+              </form>
+                <div style="display: none" id="loader" style="position:absolute;  width:400px; bottom: 50px; left:25% ; height: 200px;">
+                       <h2>Please wait, while loading...</h2>
+                      <h2>It may take few minutes...</h2>
+                      <img src="/static/load.gif" alt="">
+                  </div>
+            <!-- /.card -->
+                 {% if rule.id %}
+                    <a href="/profile/run/{{rule.id}}" id="runload"><div class="btn btn-danger">Run</div></a>
+                {% endif %}
+
+
+                    <script>
+                          document.getElementById('runload').addEventListener('click', function () {
+                            document.getElementById('loader').style.cssText = 'display:block'
+                          })
+                  </script>
+              <br><br><br><br>
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+
+{% endblock %}

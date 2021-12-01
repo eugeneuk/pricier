@@ -1,0 +1,175 @@
+{% extends 'master.html' %}
+
+{% block content %}
+
+ <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>Rules</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-brand"><a href="#">Home</a></li>
+              <li class="breadcrumb-brand active">&nbsp; Rules</li>
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Rules</h3>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                  <div class="tabs" style="margin-bottom: 20px;">
+                      <!--
+                      <a href="/profile/loader/show/{{loader.brand_id}}/"><button class="btn  btn-secondary {% if sheet_id == None %} btn-danger {% endif %}">Active</button></a>
+                      -->
+                      {% for tab in tabs %}
+                      <a href="/profile/loader/show/{{loader.brand_id}}/{{forloop.counter0}}/">
+                          <button style="margin:4px;" class="btn btn-secondary {% if sheet_id == forloop.counter0 %} btn-danger {% endif %}">{{tab}}</button>
+                      </a>
+                      {% endfor %}
+                  </div>
+
+          <form action="/profile/loader/matching/{{loader.brand_id}}/" method="post">
+                <table id="table" class="table table-bordered ">
+                  <thead>
+                  <tr>
+                    <th>Rows from FILE</th>
+                    <th>Rows from Database</th>
+                  </tr>
+                  </thead>
+
+                   {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" role="alert">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                  <tbody>
+                  {% csrf_token %}
+
+
+                  {% if matching is not None %}
+                       {% for item in matching %}
+                        <tr>
+                          <td>
+                            <input type="hidden" name="f[]" value="{{forloop.counter0}}">
+                            <p >{{item.title}}</p>
+                          </td>
+                          <td>
+
+                            <select name="d[]" id="">
+                              {% for db in db_titles %}
+
+                              <option value="{{forloop.counter0}}" {% if forloop.counter0 == item.db_index %} selected {% endif %}> {{db}} </option>
+
+                              {% endfor %}
+                            </select>
+
+                          </td>
+                        </tr>
+                      {% endfor %}
+
+
+                  {% else %}
+
+                      {% for item in titles %}
+                        <tr>
+                          <td>
+                            <input type="hidden" name="f[]" value="{{forloop.counter0}}">
+                            <p >{{item}}</p>
+                          </td>
+                          <td>
+
+                            <select name="d[]" id="">
+                              {% for db in db_titles %}
+
+                              <option value="{{forloop.counter0}}"
+
+                              >{{db}} </option>
+
+                              {% endfor %}
+                            </select>
+
+                          </td>
+                        </tr>
+                      {% endfor %}
+
+                    {% endif %}
+
+
+                  </tfoot>
+
+
+                </table>
+                 <p style="font-weight: bold">Required field. If this field is empty, in Price File, product will not create</p>
+
+
+              <select name="field_not_empty" >
+                            {% if matching is not None %}
+                                    <option value="999" {% if 999 == rule_id  %} class="red" selected  {% endif %}>None</option>
+                                 {% for item in matching %}
+                                    <option {% if forloop.counter0 == rule_id  %} class="red" selected  {% endif %}  value="{{forloop.counter0}}"  >{{item.title}} </option>
+                                  {% endfor %}
+                            {% else %}
+                                <option value="999">None</option>
+                                {% for item in titles %}
+                                    <option  value="{{forloop.counter0}}" >{{item}}</option>
+                                {% endfor %}
+                            {% endif %}
+              </select>
+              <br><br>
+              <p ><span style="font-weight:bold">Ignore words</span> ( separated by comma )</p>
+              <textarea name="rules" cols="40" rows="4">{{rule.rules}}</textarea>
+
+                <input type="hidden" name="loader_id" value="{{loader.pk}}">
+                <input type="hidden" name="sheet_book" value="{{sheet_id}}">
+
+              <br><br>
+
+                <button class="btn btn-success" type="submit">Save</button>
+              </form>
+                  <br>
+
+                  <div style="display: none" id="loader" style="position:absolute;  width:400px; bottom: 50px; left:25% ; height: 200px;">
+                       <h2>Please wait, while loading...</h2>
+                      <h2>It may take few minutes...</h2>
+                      <img src="/static/load.gif" alt="">
+                  </div>
+
+                  <a href="/profile/load-file/{{loader.pk}}/{{sheet_id}}/" id="runload" >
+                      <button class="btn btn-danger">Run Mapping</button>
+                  </a>
+                  <script>
+                      document.getElementById('runload').addEventListener('click', function () {
+                        document.getElementById('loader').style.cssText = 'display:block'
+                      })
+                  </script>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+
+{% endblock %}

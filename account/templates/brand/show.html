@@ -1,0 +1,95 @@
+{% extends 'master.html' %}
+
+{% block content %}
+
+ <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <h1>{{brand.name|title}}</h1>
+          </div>
+          <div class="col-sm-6">
+            <ol class="breadcrumb float-sm-right">
+              <li class="breadcrumb-brand"><a href="/profile/">Home </a> </li>&nbsp;
+              <li  class="breadcrumb-brand"><a href="/profile/brands/"> Brands</a> </li>&nbsp;
+              <li class="breadcrumb-brand active">{{brand.name|title}}</li>&nbsp;
+            </ol>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Prices for {{brand.name|title}}</h3>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                 <form action="/profile/loader/add/" method="post" enctype="multipart/form-data" style="margin-bottom: 20px;">
+                      {% csrf_token %}
+                      <input type="hidden" name="brand_id" value="{{brand.id}}">
+                      <div class="form-group">
+                      <label for="price">Add new Price</label>
+                      <input type="file" name="price" id="price">
+                      </div>
+                      <button class="btn btn-success">Save file</button>
+                  </form>
+
+                <table id="example1" class="table table-bordered table-striped">
+                  <thead>
+                  <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Created at</th>
+                    <th>Added by</th>
+                    <th>Open</th>
+                    <th>Delete</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+
+                  {% for item in loaders %}
+                  <tr>
+                    <td>{{brand.name}}</td>
+                    <td><a href="/profile/rules/{{item.id}}">{{item.price}}</a></td>
+                    <td>{{item.created_at}}</td>
+                    <td>
+                       {{item.user}}
+
+                    </td>
+                    <td>
+                        <a href="/profile/rules/{{item.id}}"><button class="btn btn-success">Download</button></a>
+                    </td>
+                      <td>
+                         <a href="/profile/loader/remove/{{item.id}}/{{brand.id}}"><button class="btn btn-danger">Delete</button></a>
+                    </td>
+                  </tr>
+                    {% endfor %}
+
+                  </tfoot>
+                </table>
+                  <a href="/profile/remove/{{brand.pk}}/"><button class="btn btn-danger">Remove all products of this brand</button></a>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+
+{% endblock %}

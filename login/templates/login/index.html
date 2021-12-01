@@ -1,0 +1,46 @@
+{% extends 'login.html' %}
+
+{% block content %}
+ <!-- /.login-logo -->
+  <div class="card card-outline card-primary">
+    <div class="card-header text-center">
+      <a href="/assets/index2.html" class="h1"><b>Log in</b></a>
+    </div>
+    <div class="card-body">
+      <p class="login-box-msg">Sign in to start your session</p>
+
+      <form action="/login/" method="post">
+        {% csrf_token %}
+
+        <div class="input-group mb-3">
+          <p>{{form.username.errors}}</p><br>
+          {{form.username}}
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-envelope"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          {{form.password}}
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+
+          <!-- /.col -->
+          <div class="col-4">
+            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+          </div>
+          <!-- /.col -->
+        </div>
+      </form>
+
+
+    <!-- /.card-body -->
+  </div>
+  <!-- /.card -->
+{% endblock %}
