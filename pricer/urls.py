@@ -50,7 +50,12 @@ urlpatterns = [
 
     path('profile/rule/save/', account.views.save_rule),
 
+    path('profile/products/remove/<int:id>/', account.views.rem_one_product),
+    # Edit product
+    path('profile/product/edit/<int:id>/', account.views.edit_product),
+
     path('profile/remove/<int:id>/', account.views.rem_products),
+
     path('profile/remove/', account.views.rem_products),
     path('profile/loader/remove/<int:id>/<int:brand_id>', account.views.rem_loader),
 

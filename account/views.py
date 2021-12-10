@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from products.models import Product
-from .forms import LoaderForm, BrandForm
+from .forms import LoaderForm, BrandForm, ProductForm
 from account.models import Brand
 from .models import Loader, Matching, Rule
 from products.models import Product
@@ -14,6 +14,25 @@ def index(request):
     products = Product.objects.all()
 
     return render(request, 'account/index.html', {'products': products})
+
+
+@login_required(login_url='/login/')
+def edit_product(request, id=None):
+
+    if request.method == 'POST':
+        item = Product.objects.get(pk=id)
+        form = ProductForm(request.POST, instance=item)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, 'Saved...')
+                return redirect('/profile/products/')
+            except:
+                form.add_error(None, "Error with saving form")
+    else:
+        item = Product.objects.get(pk=id)
+        form = ProductForm(instance=item)
+        return render(request, 'account/edit-product.html', {'form': form, 'item': item})
 
 
 @login_required(login_url='/login/')
@@ -291,7 +310,6 @@ def run_file(request, id, sheet_id):
 
 
 def rem_products(request, id=None):
-
     if id is not None:
         brand = Brand.objects.get(pk=id)
         Product.objects.filter(brand=brand.name).delete()
@@ -299,6 +317,13 @@ def rem_products(request, id=None):
         Product.objects.filter().delete()
 
     return HttpResponse('Done')
+
+
+def rem_one_product(request, id):
+    Product.objects.filter(pk=id).delete()
+    messages.success(request, 'Deleted...')
+    return redirect('/profile/products/', msg="Saved!")
+
 
 # Additional Rules
 def check_field(field, value):

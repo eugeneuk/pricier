@@ -1,6 +1,6 @@
 from django import forms
 from .models import *
-
+from products.models import Product
 
 class BrandForm(forms.ModelForm):
     class Meta:
@@ -8,6 +8,11 @@ class BrandForm(forms.ModelForm):
         fields = ['name']
         #fields = '__all__'
 
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['sku', 'msrp', 'our_price', 'map']
+        #fields = '__all__'
 
 class LoaderForm(forms.ModelForm):
     class Meta:
