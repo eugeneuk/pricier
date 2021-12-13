@@ -119,6 +119,7 @@
 <script src="{% static 'plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
 <!-- AdminLTE App -->
 <script src="{% static 'dist/js/adminlte.min.js' %}"></script>
+<script src="{% static 'script.js' %}"></script>
 
 <!-- Page specific script -->
 <script>
@@ -128,7 +129,7 @@
       "lengthChange": false,
       "autoWidth": false,
       "paging": true,
-      "pageLength": 60,
+      "pageLength": 10,
       "buttons": [ "copy", "csv", "excel", "pdf", "print", "colvis" ]
     }).
     buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
@@ -144,5 +145,10 @@
     });
   });
 </script>
+
+
+
+
+
 </body>
 </html>

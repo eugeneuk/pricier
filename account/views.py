@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from products.models import Product
 from .forms import LoaderForm, BrandForm, ProductForm
@@ -33,6 +33,26 @@ def edit_product(request, id=None):
         item = Product.objects.get(pk=id)
         form = ProductForm(instance=item)
         return render(request, 'account/edit-product.html', {'form': form, 'item': item})
+
+
+
+@login_required(login_url='/login/')
+def edit_product_ajax(request):
+
+    if request.method == 'POST':
+        item = Product.objects.get(pk=request.POST['id_val'])
+        item.sku = request.POST['sku_val']
+        item.our_price = request.POST['price_val']
+        item.msrp = request.POST['msrp_val']
+        item.map = request.POST['map_val']
+        try:
+           item.save()
+           return JsonResponse({'success': True, 'pk': item.pk})
+        except:
+           return JsonResponse({'success': False})
+    else:
+        return JsonResponse({'success': False})
+
 
 
 @login_required(login_url='/login/')

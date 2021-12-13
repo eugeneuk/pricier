@@ -25,6 +25,7 @@
         </div>
       </div><!-- /.container-fluid -->
     </section>
+<!-- Button trigger modal -->
 
     <!-- Main content -->
     <section class="content">
@@ -46,30 +47,43 @@
                     <th>SKU</th>
 
                     <th>Brand</th>
-                    <th>Price $</th>
-                    <th>Msrp $</th>
-                    <th>Map $</th>
+                    <th>Our Price</th>
+                    <th>MSRP</th>
+                    <th>MAP</th>
                     <th>Options</th>
 
                   </tr>
                   </thead>
                   <tbody>
                   {% for item in products %}
-                  <tr>
+                  <tr id="l-{{item.pk}}">
                     <td>{{forloop.counter}}</td>
-                    <td>{{item.sku}}</td>
+                    <td class="d-sku">{{item.sku}}</td>
                     <td>{{item.brand}}</td>
-                    <td>{{item.our_price|floatformat}}</td>
-                    <td>{{item.msrp|floatformat}}</td>
-                    <td>{{item.map|floatformat}}</td>
+                    <td class="d-price">{{item.our_price|floatformat}}</td>
+                    <td class="d-msrp">{{item.msrp|floatformat}}</td>
+                    <td class="d-map">{{item.map|floatformat}}</td>
                     <td>
                       <a href="/profile/products/remove/{{item.pk}}/" onclick="return confirm('Are you sure you want to delete this url?');">
                         <button class="btn btn-danger">Delete</button>
                       </a>
 
+                      <!--
                       <a href="/profile/product/edit/{{item.pk}}/" >
                         <button style="margin-left:15px;" class="btn btn-default">Edit</button>
                       </a>
+                      -->
+
+                      <button data-sku="{{item.sku}}"
+                              data-msrp="{{item.msrp|floatformat}}"
+                              data-map="{{item.map|floatformat}}"
+                              data-price="{{item.our_price|floatformat}}"
+                              data-pk="{{item.pk}}"
+                              data-row="l-{{item.pk}}"
+
+                              type="button" class="btn btn-primary loadModalForm" data-toggle="modal" data-target="#editModal">
+                        Edit
+                      </button>
                     </td>
                   </tr>
                 {% endfor %}
@@ -88,6 +102,58 @@
       <!-- /.container-fluid -->
     </section>
     <!-- /.content -->
+
+<!-- Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModal" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit product</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="/profile/product/edit-ajax/" id="saveForm" method="post">
+
+          {% csrf_token %}
+          <input type="hidden" value="" name="id_val" id="id_val">
+
+          <div class="form-group">
+            <label for="">SKU</label>
+            <input id="sku_val" type="text" name="sku_val" class="form-control" >
+          </div>
+
+          <div class="form-group">
+             <label for="">Our Price</label>
+            <input id="price_val"  name="price_val"  type="text" class="form-control" >
+          </div>
+
+          <div class="form-group">
+             <label for="">MSRP</label>
+            <input id="msrp_val"  name="msrp_val"  type="text" class="form-control" >
+          </div>
+
+          <div class="form-group">
+             <label for="">MAP</label>
+            <input id="map_val"  name="map_val"  type="text" class="form-control" >
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button id="saveModalBtn" type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
   </div>
+</div>
+
+
+  </div>
+
+
+
+
+
 
 {% endblock %}
