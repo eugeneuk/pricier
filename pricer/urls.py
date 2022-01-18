@@ -29,10 +29,13 @@ urlpatterns = [
     path('excel/', excel.views.index),
     path('login/', login.views.login, name="login"),
     path('logout/', login.views.user_logout, name="logout"),
+
     #Profile
     path('profile/', account.views.brands),
     path('profile/products/', account.views.index),
+
     path('profile/brands/', account.views.brands),
+    path('profile/brand/delete/<int:pk>/', account.views.brand_delete),
     path('profile/rules/<int:loader_id>', account.views.rules),
     path('profile/brands/add/', account.views.addbrand),
     path('profile/brands/show/<int:id>/', account.views.showBrand),
@@ -42,8 +45,10 @@ urlpatterns = [
     path('profile/loader/add/', account.views.add_loader),
     path('profile/load-file/<int:id>/<int:sheet_id>/', account.views.run_file),
     path('profile/run/<int:rule_id>', account.views.run_file_new),
-
-
+    # Attributes
+    path('profile/attributes/replacement/', account.views.show_attributes_page),
+    path('profile/attributes/replacement/all/', account.views.get_all_replacemtns),
+    path('profile/attributes/replacement/delete/', account.views.delete_replacemtns),
 
 
     path('profile/add-rule/<int:brand_id>/<int:loader_id>/<slug:type>/', account.views.add_rule),
@@ -54,12 +59,14 @@ urlpatterns = [
 
     # Edit product
     path('profile/product/edit-ajax/', account.views.edit_product_ajax),
+    path('profile/replacement/edit-ajax/', account.views.edit_replacement_ajax),
     path('profile/product/edit/<int:id>/', account.views.edit_product),
 
 
     path('profile/remove/<int:id>/', account.views.rem_products),
 
     path('profile/remove/', account.views.rem_products),
+    path('profile/products/remove-by-brand/<str:name>/', account.views.rem_products),
     path('profile/loader/remove/<int:id>/<int:brand_id>', account.views.rem_loader),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

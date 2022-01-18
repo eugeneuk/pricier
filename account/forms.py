@@ -22,3 +22,10 @@ class LoaderForm(forms.ModelForm):
 class UploadFileForm(forms.Form):
     title = forms.CharField(max_length=50)
     file = forms.FileField()
+
+
+class ReplacementForm(forms.Form):
+    what = forms.CharField(initial=1, label='Replace SKU') #Replace SKU
+    forwhat = forms.CharField(initial=2, label='By') #By
+    file = forms.FileField()
+

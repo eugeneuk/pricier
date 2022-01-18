@@ -19,7 +19,7 @@
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
               <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Products</li>
+              <li class="breadcrumb-item active">Replacements</li>
             </ol>
           </div>
         </div>
@@ -36,77 +36,59 @@
 
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">All products</h3>&nbsp;&nbsp;<br>
-                <form action="/profile/products/" method="post">
-                  {% csrf_token %}
-                <div class="form-group">
-                <select name="brand" >
-                  <option value="0" {% if brand is None %} selected {% endif %} >All</option>
-                  {% for b in brands %}
-                    <option value="{{b.pk}}" {% if brand == b.name %} selected {% endif %}>{{b.name}}</option>
-                  {%endfor%}
-                </select>
-
-                  </div>
-                  <button class="btn btn-success" type="submit">Filter</button>
-                  </form>
+                <h3 class="card-title">All replacements</h3>
               </div>
+
               <!-- /.card-header -->
               <div class="card-body">
                 <table id="example1" class="table table-bordered table-striped">
                   <thead>
                   <tr>
                     <th>Id</th>
-                    <th>SKU</th>
-
-                    <th>Brand</th>
-                    <th>Our Price</th>
-                    <th>MSRP</th>
-                    <th>MAP</th>
+                    <th>Original</th>
+                    <th>Our SKU</th>
                     <th>Options</th>
 
                   </tr>
                   </thead>
                   <tbody>
-                  {% for item in products %}
+                  {% for item in items %}
                   <tr id="l-{{item.pk}}">
                     <td>{{forloop.counter}}</td>
-                    <td class="d-sku">{{item.sku}}</td>
-                    <td>{{item.brand}}</td>
-                    <td class="d-price">{{item.our_price|floatformat}}</td>
-                    <td class="d-msrp">{{item.msrp|floatformat}}</td>
-                    <td class="d-map">{{item.map|floatformat}}</td>
+                    <td class="d-sku">{{item.what}}</td>
+                    <td>{{item.forwhat}}</td>
                     <td>
-                      <a href="/profile/products/remove/{{item.pk}}/" onclick="return confirm('Are you sure you want to delete this url?');">
-                        <button class="btn btn-danger">Delete</button>
-                      </a>
+                       <form action="/profile/attributes/replacement/delete/" method="post">
+                        <input type="hidden" name="pk" value="{{item.pk}}">
+                         {% csrf_token %}
+                         <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?');">Delete</button>
+                       </form>
 
                       <!--
                       <a href="/profile/product/edit/{{item.pk}}/" >
                         <button style="margin-left:15px;" class="btn btn-default">Edit</button>
                       </a>
                       -->
-
-                      <button data-sku="{{item.sku}}"
-                              data-msrp="{{item.msrp|floatformat}}"
-                              data-map="{{item.map|floatformat}}"
-                              data-price="{{item.our_price|floatformat}}"
+                        <!--
+                      <button
+                              data-what="{{item.msrp|floatformat}}"
+                              data-forwhat="{{item.map|floatformat}}"
                               data-pk="{{item.pk}}"
                               data-row="l-{{item.pk}}"
-
                               type="button" class="btn btn-primary loadModalForm" data-toggle="modal" data-target="#editModal">
                         Edit
                       </button>
+                      -->
                     </td>
                   </tr>
                 {% endfor %}
                   </tfoot>
                 </table>
-                {% if brand is not None %}
-                  <a href="/profile/products/remove-by-brand/{{brand}}/"><button class="btn btn-danger" onclick="return confirm('Are you sure?');">Remove {{brand}} products</button></a>
-                {%else%}
-                  <a href="/profile/remove/"><button class="btn btn-danger" onclick="return confirm('Are you sure you want delete ALL PRODUCTS?');">Remove all products</button></a>
-                {%endif%}
+                 <form action="/profile/attributes/replacement/delete/" method="post">
+                    <input type="hidden" name="pk">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?');">Remove all replacements</button>
+                  </form>
               </div>
               <!-- /.card-body -->
             </div>
@@ -125,36 +107,27 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="editModalLabel">Edit product</h5>
+        <h5 class="modal-title" id="editModalLabel">Edit replacemnet</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-        <form action="/profile/product/edit-ajax/" id="saveForm" method="post">
+        <form action="/profile/replacement/edit-ajax/" id="saveForm" method="post">
 
           {% csrf_token %}
           <input type="hidden" value="" name="id_val" id="id_val">
 
           <div class="form-group">
-            <label for="">SKU</label>
-            <input id="sku_val" type="text" name="sku_val" class="form-control" >
+            <label for="">Original</label>
+            <input id="what_val" type="text" name="sku_val" class="form-control" >
           </div>
 
           <div class="form-group">
-             <label for="">Our Price</label>
-            <input id="price_val"  name="price_val"  type="text" class="form-control" >
+             <label for="">Our SKU</label>
+            <input id="forwhat_val"  name="price_val"  type="text" class="form-control" >
           </div>
 
-          <div class="form-group">
-             <label for="">MSRP</label>
-            <input id="msrp_val"  name="msrp_val"  type="text" class="form-control" >
-          </div>
-
-          <div class="form-group">
-             <label for="">MAP</label>
-            <input id="map_val"  name="map_val"  type="text" class="form-control" >
-          </div>
         </form>
       </div>
       <div class="modal-footer">

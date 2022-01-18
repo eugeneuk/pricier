@@ -143,8 +143,6 @@
                                 {% endfor %}
               </select>
 
-
-
               <br><br>
               <p ><span style="font-weight:bold">Ignore words</span> ( separated by comma )</p>
               <textarea name="rules" cols="40" rows="2">{{rule.rules}}</textarea>
@@ -154,10 +152,40 @@
                 <input type="text" name="remove_charter_from_all_sku" value="{{rule.remove_charter_all|default:''}}">
     <hr>
                 <p>
-                    <span style="font-weight:bold">Remove character
-                    <input type="text" name="remove_charter_from_sku" value="{{rule.remove_charter|default:''}}">
-                    from SKU
-                    <input type="text" name="sku_to_remove_charter" value="{{rule.remove_charter_sku|default:''}}">
+                    {% if replace_chars is not None %}
+                    {% for rc in replace_chars %}
+                        <p>
+                    <span>
+                            <span style="font-weight:bold">Remove character
+                            <input type="text" name="remove_charter_from_sku[]" value="{{rc.what|default:''}}">
+                            from SKU
+                            <input type="text" name="sku_to_remove_charter[]" value="{{rc.forwhat|default:''}}">
+                        </span>
+                        </p>
+                            <br>
+                    {% empty %}
+                   <span>
+                                <span style="font-weight:bold">Remove character
+                                <input type="text" name="remove_charter_from_sku[]" value="{{rule.remove_charter|default:''}}">
+                                from SKU
+                                <input type="text" name="sku_to_remove_charter[]" value="{{rule.remove_charter_sku|default:''}}">
+                            </span>
+                    {% endfor %}
+
+                    {% else %}
+                            <span>
+                                <span style="font-weight:bold">Remove character
+                                <input type="text" name="remove_charter_from_sku[]" value="{{rule.remove_charter|default:''}}">
+                                from SKU
+                                <input type="text" name="sku_to_remove_charter[]" value="{{rule.remove_charter_sku|default:''}}">
+                            </span>
+                        {% endif %}
+                        <br><br>
+                    <span id="more-here">
+
+                    </span>
+
+                        &nbsp; &nbsp;<button class="btn btn-default" id="add-more-remove-charter">Add more</button>
                 </p>
 
 
@@ -165,10 +193,39 @@
                 <p><span style="font-weight:bold">Ignore SKUs</p>
                 <textarea name="ignore_sku" cols="40" rows="2">{{rule.ignore_skus}}</textarea>
      <hr>
-                <p><span style="font-weight:bold">Replace SKU <input type="text" name="what" value="{{rule.r_what|default:''}}"> by
-                    <input type="text" name="forwhat" value="{{rule.r_forwhat|default:''}}">  </p>
+                <p>
+                     {% if replace_skus is not None %}
+
+                    {% for rs in replace_skus %}
+                            <p>
+                                    <span>
+                                    <span style="font-weight:bold">Replace SKU <input type="text" name="what[]" value="{{rs.what|default:''}}">
+                                        by
+                                    <input type="text" name="forwhat[]" value="{{rs.forwhat|default:''}}">
+                                    </span>
+                                        </p><br>
+                        {% empty %}
+                                <span>
+                    <span style="font-weight:bold">Replace SKU <input type="text" name="what[]" value="{{rs.forwhat|default:''}}"> by
+                    <input type="text" name="forwhat[]" value="{{rule.r_forwhat|default:''}}">
+                    </span>
+                        {% endfor %}
+                        {% else %}
+                        <span>
+                    <span style="font-weight:bold">Replace SKU <input type="text" name="what[]" value="{{rs.what|default:''}}"> by
+                    <input type="text" name="forwhat[]" value="{{rs.forwhat|default:''}}">
+                    </span>
+                        {%endif%}
+                    <br><br>
+                    <span id="more-here-sku">
+
+                    </span>
+                    &nbsp; &nbsp;<button class="btn btn-default" id="add-more-remove-sku">Add more</button>
+
+                </p>
 
                   <hr>
+
                   <button class="btn btn-success">Save</button>
               </div>
 
@@ -187,12 +244,11 @@
                     <a href="/profile/run/{{rule.id}}" id="runload"><div class="btn btn-danger">Run</div></a>
                 {% endif %}
 
-
                     <script>
                           document.getElementById('runload').addEventListener('click', function () {
                             document.getElementById('loader').style.cssText = 'display:block'
                           })
-                  </script>
+                    </script>
               <br><br><br><br>
           </div>
           <!-- /.col -->

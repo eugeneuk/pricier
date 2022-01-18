@@ -52,6 +52,9 @@
                     <td>{{item.created_at}}</td>
                     <td>
                       <a href="/profile/brands/show/{{item.id}}"><button class="btn btn-success">Open</button></a>
+                      <a href="/profile/brand/delete/{{item.id}}" onclick="return confirm('Are you sure?');">
+                        <button class="btn btn-danger">Delete</button>
+                      </a>
                     </td>
                   </tr>
                 {% endfor %}

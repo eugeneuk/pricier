@@ -1,19 +1,29 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from products.models import Product
-from .forms import LoaderForm, BrandForm, ProductForm
+from .forms import LoaderForm, BrandForm, ProductForm, ReplacementForm
 from account.models import Brand
-from .models import Loader, Matching, Rule
+from .models import Loader, Matching, Rule, Replace, Rsku, Rcharter
 from products.models import Product
 import openpyxl
 from django.contrib import messages
 
 @login_required(login_url='/login/')
 def index(request):
-    products = Product.objects.all()
+    brand = None
+    if request.method == 'POST':
+        try:
+            brand = Brand.objects.get(pk=request.POST['brand']).name
+            products = Product.objects.filter(brand=brand)
+        except:
+            products = Product.objects.all()
+    else:
+        products = Product.objects.all()
 
-    return render(request, 'account/index.html', {'products': products})
+    brands = Brand.objects.all()
+    return render(request, 'account/index.html', {'products': products, 'brands': brands, 'brand': brand})
+
 
 
 @login_required(login_url='/login/')
@@ -56,6 +66,24 @@ def edit_product_ajax(request):
 
 
 @login_required(login_url='/login/')
+def edit_replacement_ajax(request):
+
+    if request.method == 'POST':
+        item = Replace.objects.get(pk=request.POST['id_val'])
+        item.what = request.POST['what']
+        item.forwhat = request.POST['forwhat']
+
+        try:
+           item.save()
+           return JsonResponse({'success': True, 'pk': item.pk})
+        except:
+           return JsonResponse({'success': False})
+    else:
+        return JsonResponse({'success': False})
+
+
+
+@login_required(login_url='/login/')
 def addbrand(request):
     if request.method == 'POST':
         form = BrandForm(request.POST)
@@ -75,6 +103,17 @@ def addbrand(request):
 def brands(request):
     brands = Brand.objects.all()
     return render(request, 'brand/index.html', {'brands': brands})
+
+
+@login_required(login_url='/login/')
+def brand_delete(request, pk):
+    try:
+        brand = Brand.objects.get(pk=pk).delete()
+    except:
+        return HttpResponse('This brand is not exists')
+
+    messages.success(request, 'Deleted...')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 @login_required(login_url='/login/')
@@ -329,14 +368,18 @@ def run_file(request, id, sheet_id):
     return HttpResponse("<h2> " + str(z) + "products saved...</h2> <br> <a href='/profile/products/'>Go to products</a>")
 
 
-def rem_products(request, id=None):
+def rem_products(request, name=None):
     if id is not None:
-        brand = Brand.objects.get(pk=id)
-        Product.objects.filter(brand=brand.name).delete()
+        try:
+            brand = Brand.objects.get(name=name)
+            Product.objects.filter(brand=brand.name).delete()
+        except:
+            pass
     else:
         Product.objects.filter().delete()
 
-    return HttpResponse('Done')
+    messages.success(request, 'Deleted...')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
 def rem_one_product(request, id):
@@ -422,6 +465,7 @@ def rules(request, loader_id):
     loader = Loader.objects.get(pk=loader_id)
     brand = Brand.objects.get(pk=loader.brand_id)
 
+
     return render(request, 'rules/index.html', {
         'brand': brand,
         'loader': loader,
@@ -444,8 +488,6 @@ def add_rule(request, brand_id, loader_id=0, type=0):
         loader = None
 
     row_num = 1
-
-
 
     try:
         rule = Rule.objects.get(brand_id=brand_id, loader_id=loader_id, type=type)
@@ -493,7 +535,9 @@ def add_rule(request, brand_id, loader_id=0, type=0):
         titles.append(sheet[row_num][col].value)
 
 
-    print(titles)
+    replace_skus = Rsku.objects.filter(rule_id=loader.pk)
+    replace_chars = Rcharter.objects.filter(rule_id=loader.pk)
+
     return render(request, 'rules/add.html', {
         'brand': brand,
         'loader': loader,
@@ -501,21 +545,67 @@ def add_rule(request, brand_id, loader_id=0, type=0):
         'tabs': tabs,
         'db_titles': db_titles,
         'type': type,
-        'rule': rule
+        'rule': rule,
+        'replace_skus': replace_skus,
+        'replace_chars': replace_chars
     })
 
+####
+# Helpers
+###
+def save_replacer(request):
+    # Rsku, Rcharter
+    what = request.POST.getlist('what[]')
+    forwhat = request.POST.getlist('forwhat[]')
+    loader_id = request.POST['loader_id']
+    i = 0
+    for w in what:
+        if w != '':
+            try:
+                Rsku.objects.get(what=w).delete()
+            except:
+                pass
 
+            item = Rsku.objects.create(
+                rule_id=int(loader_id),
+                what=str(w),
+                forwhat=str(forwhat[i])
+            )
+        i = i + 1
+
+def save_charters(request):
+    what = request.POST.getlist('remove_charter_from_sku[]')
+    forwhat = request.POST.getlist('sku_to_remove_charter[]')
+    loader_id = request.POST['loader_id']
+    i = 0
+    for w in what:
+        if w != '':
+            try:
+                Rcharter.objects.get(what=w).delete()
+            except:
+                pass
+
+            item = Rcharter.objects.create(
+                rule_id=int(loader_id),
+                what=str(w),
+                forwhat=str(forwhat[i])
+            )
+        i = i + 1
+####
+# EndHelpers
+###
 
 @login_required(login_url='/login/')
 def save_rule(request):
     if request.method == 'POST':
-        print(request.POST)
-
 
         sheets = request.POST.getlist('sheets')
         sheets = ','.join(map(str, sheets))
 
-
+        # Save additional Attributes
+        save_replacer(request)
+        save_charters(request)
+        #
         try:
             rule = Rule.objects.get(
                 brand_id=int(request.POST.get('brand_id')),
@@ -544,13 +634,13 @@ def save_rule(request):
         rule.remove_charter_all = request.POST.get('remove_charter_from_all_sku') #remove_charter_from_all_sku
 
 
-        rule.remove_charter = request.POST.get('remove_charter_from_sku')
-        rule.remove_charter_sku = request.POST.get('sku_to_remove_charter')
+        # -- rule.remove_charter = request.POST.get('remove_charter_from_sku')
+        # -- rule.remove_charter_sku = request.POST.get('sku_to_remove_charter')
 
         rule.ignore_skus = request.POST.get('ignore_sku')
 
-        rule.r_what = request.POST.get('what')
-        rule.r_forwhat = request.POST.get('forwhat')
+        # - rule.r_what = request.POST.get('what')
+        #- rule.r_forwhat = request.POST.get('forwhat')
 
         rule.save()
 
@@ -606,6 +696,8 @@ def run_file_new(request, rule_id):
 
     return HttpResponse("<h2> " + str(all_prods) + " products saved...</h2> <br> <a href='/profile/products/'>Go to products</a>")
 
+
+
 def load_proccess(sheet_id, loader, row_num, brand, rule):
 
     book = openpyxl.open(loader.price, read_only=True)
@@ -618,6 +710,10 @@ def load_proccess(sheet_id, loader, row_num, brand, rule):
 
     z = 0
 
+    reps = Replace.objects.all()
+    charteres_reps = Rcharter.objects.filter(rule_id=int(loader.pk))
+    sku_replace = Rsku.objects.filter(rule_id=int(loader.pk))
+
     for row in range(row_num, sheet.max_row + 1):
 
         save = 1
@@ -627,6 +723,7 @@ def load_proccess(sheet_id, loader, row_num, brand, rule):
         product = Product()
 
         product.brand = brand.name
+        #get replacements
 
         for col in range(0, sheet.max_column):
 
@@ -640,6 +737,21 @@ def load_proccess(sheet_id, loader, row_num, brand, rule):
                 sku = sheet[row][col].value
                 if sku is not None:
                     sku = str(sku)
+                    # Replace with our SKUs from DB
+                    sku = replace_sku_loader(sku, reps)
+
+                    #charteres_reps
+                    for sr in sku_replace:
+                        if sku == str(sr.what):
+                            sku = str(sr.forwhat)
+                            break
+
+                    tmp_sku = sku
+                    for cr in charteres_reps:
+                        if sku == str(cr.forwhat):
+                            tmp_sku = tmp_sku.replace(cr.what, "")
+                    sku = tmp_sku
+
                     if rule.remove_charter_all is not None:
                         sku = sku.replace(rule.remove_charter_all, "")
 
@@ -695,3 +807,94 @@ def load_proccess(sheet_id, loader, row_num, brand, rule):
             del product
 
     return z
+
+# Replacement for SKU
+def replace_sku_loader(sku, reps):
+    for rep in reps:
+        try:
+            if str(rep.what) == str(sku):
+                return str(rep.forwhat)
+        except:
+            pass
+
+    return sku
+
+
+## Attributes ##
+@login_required(login_url='/login/')
+def show_attributes_page(request):
+    if request.method == 'POST':
+        load_attributes(request)
+        messages.success(request, 'Saved...')
+        return redirect('/profile/attributes/replacement/')
+
+    form = ReplacementForm
+    return render(request, 'attributes/replace.html', {'form':form})
+
+#
+## Load file with replacement SKUs
+#
+
+@login_required(login_url='/login/')
+def load_attributes(request):
+    # to get 0 or 1, because of Array starts with 0, not from 1
+    what_cell = ( int(request.POST['what']) - 1)
+    forwhat_cell = ( int(request.POST['forwhat']) - 1)
+
+    #openxyl
+    book = openpyxl.open(request.FILES['file'], read_only=True)
+    tabs = book.sheetnames
+    # Load all stylesheets in book
+    for tab in tabs:
+        sheet = book[tab]
+        # Load all data from current stylesheet
+        for row in range(1, sheet.max_row + 1):
+            # Check if empty
+            if sheet[row][0].value is None or sheet[row][0].value == 'MODEL' or sheet[row][0].value == '':
+                continue
+            # Get Row with original model SKU
+            # Get Row with OUR model SKU
+            create_attribute(sheet[row][what_cell].value, sheet[row][forwhat_cell].value)
+
+# just create instance
+def create_attribute(what, forwhat):
+    try:
+        item = Replace.objects.get(what=what)
+    except:
+        item = Replace.objects.create()
+
+    item.what = what
+    item.forwhat = forwhat
+    item.save()
+
+
+#
+## Get all Replacements
+#
+
+@login_required(login_url='/login/')
+def get_all_replacemtns(request):
+    items = Replace.objects.all()
+    return render(request, 'attributes/index.html', {'items': items})
+
+
+@login_required(login_url='/login/')
+def delete_replacemtns(request):
+    if request.method == 'POST':
+        # Check if there is PK, and delete one ITEM
+        if request.POST['pk'] is not None and request.POST['pk'] != '':
+            try:
+                Replace.objects.all().get(pk=request.POST['pk']).delete()
+            except:
+                return HttpResponse('Some thing wrong...')
+
+            messages.success(request, 'Deleted...')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        # delete all ITEMS
+        else:
+            Replace.objects.all().delete()
+            messages.success(request, 'Deleted...')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+            #return HttpResponse('Deleted all')
+
+    return HttpResponse('Get Method is not supported form this route..')

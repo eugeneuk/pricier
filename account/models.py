@@ -78,6 +78,27 @@ class Matching(models.Model):
      field_not_empty = models.CharField(max_length=191, blank=True, null=True)
      rules = models.TextField(blank=True)
 
+
+
+class Replace(models.Model):
+     what = models.CharField(max_length=191, blank=True, null=True)
+     forwhat = models.CharField(max_length=191, blank=True, null=True)
+
+# Replace Charter
+class Rcharter(models.Model):
+     rule_id = models.IntegerField(null=True)
+     what = models.CharField(max_length=191, blank=True, null=True)
+     forwhat = models.CharField(max_length=191, blank=True, null=True)
+
+# Replace SKU
+class Rsku(models.Model):
+     rule_id = models.IntegerField(null=True)
+     what = models.CharField(max_length=191, blank=True, null=True)
+     forwhat = models.CharField(max_length=191, blank=True, null=True)
+
+
+
+
 #class Matching(models.Model):
 #     file_id = models.IntegerField(null=True)
 ##     brand_id = models.IntegerField(null=True)
